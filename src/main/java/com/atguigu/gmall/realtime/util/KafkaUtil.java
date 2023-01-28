@@ -20,7 +20,7 @@ public class KafkaUtil {
 
     public static String DEFAULT_TOPIC = "default_topic";
 
-
+    // 获取 flink 作为 kafka 的 消费者
     public static FlinkKafkaConsumer<String> getFlinkKafkaConsumer(String topic,String groupId){
         Properties properties = new Properties();
         properties.setProperty("bootstrap.servers",BOOTSTRAP_SERVERS);
@@ -70,5 +70,33 @@ public class KafkaUtil {
         );
 
         return stringFlinkKafkaProducer;
+    }
+
+
+    //用于flink sql读取kafka的数据
+    public static String getKafkaDDL(String topic , String groupId){
+
+        return "with (\n" +
+                "'connector' = 'kafka',\n" +
+                "'topic' = " + "'"+topic+"' ," + "\n" +
+                "'properties.bootstrap.servers' = '"+BOOTSTRAP_SERVERS + "',\n" +
+                "'properties.group.id' = '"+groupId+"',\n" +
+                "'format' = 'json',\n" +
+                "'scan.startup.mode' = 'group-offsets')";
+    }
+
+    // 用于flink sql 发送数据给 kafka
+    public static String getUpsertKafkaDDL(String topic){
+        return "with(\n" +
+                "'connector' = \"upsert-kafka\",\n" +
+                "'topic' = '"+topic+"',\n" +
+                "'properties.bootstrap.servers' = '"+BOOTSTRAP_SERVERS+"',\n" +
+                "'key.format' = 'json',\n" +
+                "'value.format' = 'json'\n" +
+                ")";
+    }
+
+    public static void  main(String[] arg){
+        System.out.println(getKafkaDDL("topic","groupId"));
     }
 }
